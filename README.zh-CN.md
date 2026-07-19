@@ -1,11 +1,6 @@
 # Flutter Template
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Flutter](https://img.shields.io/badge/Flutter-3.29%2B-02569B?logo=flutter)](https://flutter.dev)
-
-由 [Roki AI](https://github.com/rokiai) 维护的开源 Flutter 脚手架：**MVVM + Riverpod**，开箱即用、便于二次开发。
-
-仓库地址：<https://github.com/rokiai/flutter_template>
+基于 **MVVM + Riverpod** 的 Flutter 脚手架，便于按生产项目方式扩展业务功能。
 
 **语言：** [English](README.md) · 中文
 

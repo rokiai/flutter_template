@@ -1,11 +1,6 @@
 # Flutter Template
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Flutter](https://img.shields.io/badge/Flutter-3.29%2B-02569B?logo=flutter)](https://flutter.dev)
-
-An open-source Flutter starter by [Roki AI](https://github.com/rokiai): **MVVM + Riverpod**, ready for production-style feature development.
-
-Repository: <https://github.com/rokiai/flutter_template>
+**MVVM + Riverpod** Flutter starter, ready for production-style feature development.
 
 **Languages:** English · [中文](README.zh-CN.md)
 
