@@ -1,0 +1,23 @@
+{
+  "@@locale": "en",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "noData": "No data",
+  "offline": "Your device is offline",
+  "unexpectedErrorOccurred": "Unexpected error occurred",
+  "menuCounter": "Counter",
+  "menuApi": "API",
+  "menuSetting": "Settings",
+  "counterDescription": "Riverpod state demo. Tap buttons to update the count.",
+  "counterIncrement": "Increment",
+  "counterDecrement": "Decrement",
+  "counterReset": "Reset",
+  "apiExampleDescription": "Dio + Repository + ViewModel example (JSONPlaceholder /posts).",
+  "preferences": "Preferences",
+  "appearances": "Appearance",
+  "auto": "Follow the system",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+  "language": "Language"
+}

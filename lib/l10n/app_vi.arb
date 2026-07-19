@@ -1,0 +1,23 @@
+{
+  "@@locale": "vi",
+  "ok": "OK",
+  "cancel": "Hủy",
+  "confirm": "Xác nhận",
+  "noData": "Không có dữ liệu",
+  "offline": "Thiết bị đang ngoại tuyến",
+  "unexpectedErrorOccurred": "Đã xảy ra lỗi không mong muốn",
+  "menuCounter": "Đếm",
+  "menuApi": "API",
+  "menuSetting": "Cài đặt",
+  "counterDescription": "Demo trạng thái Riverpod. Nhấn nút để cập nhật số đếm.",
+  "counterIncrement": "Tăng",
+  "counterDecrement": "Giảm",
+  "counterReset": "Đặt lại",
+  "apiExampleDescription": "Ví dụ Dio + Repository + ViewModel (JSONPlaceholder /posts).",
+  "preferences": "Tuỳ chọn",
+  "appearances": "Giao diện",
+  "auto": "Theo hệ thống",
+  "lightMode": "Sáng",
+  "darkMode": "Tối",
+  "language": "Ngôn ngữ"
+}

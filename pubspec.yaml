@@ -1,0 +1,61 @@
+name: flutter_template
+description: "Open-source Flutter MVVM + Riverpod starter template by Roki AI."
+publish_to: 'none'
+version: 0.1.0+1
+homepage: https://github.com/rokiai/flutter_template
+repository: https://github.com/rokiai/flutter_template
+issue_tracker: https://github.com/rokiai/flutter_template/issues
+
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  collection: ^1.19.0
+  connectivity_plus: ^7.2.0
+  cupertino_icons: ^1.0.9
+  dio: ^5.10.0
+  envied: ^1.3.8
+  intl: any
+  flutter_riverpod: ^3.3.2
+  flutter_svg: ^2.3.0
+  freezed_annotation: ^3.1.0
+  go_router: ^17.3.0
+  google_fonts: ^8.1.0
+  hugeicons: ^1.1.7
+  json_annotation: ^4.12.0
+  lottie: ^3.5.1
+  package_info_plus: ^10.2.0
+  riverpod_annotation: ^4.0.3
+  sentry_flutter: ^9.6.0
+  shared_preferences: ^2.5.5
+  talker_dio_logger: ^5.1.17
+  talker_flutter: ^5.1.17
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  build_runner: ^2.15.1
+  change_app_package_name: ^1.5.0
+  envied_generator: ^1.3.8
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  freezed: ^3.2.3
+  go_router_builder: ^4.1.1
+  json_serializable: ^6.11.2
+  riverpod_generator: ^4.0.4
+  test: ^1.31.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+
+  assets:
+    - assets/animations/
+    - assets/google_fonts/
+    - assets/images/
