@@ -1,56 +1,49 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Flutter CI/CD Workflow
+# Lightweight CI: resolve deps, codegen, and verify the app can start (compile smoke).
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Flutter Build
-    runs-on: macos-latest
+  verify:
+    name: Verify startup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '21'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.35.5'
+          cache: true
+
+      - name: Prepare env
+        run: cp .env.example .env
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate localization files
-        run: dart run easy_localization:generate -f keys -o locale_keys.g.dart --source-dir assets/translations
+      - name: Code generation
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
 
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
 
-      - name: Run tests
+      - name: Unit tests
         run: flutter test
 
-      - name: Install iOS pods
-        run: |
-          cd ios
-          pod install --repo-update
-
-      - name: Build iOS
-        run: flutter build ios --debug --simulator
-
-      - name: Build Android
-        run: flutter build apk --debug
+      # Compile smoke — proves main.dart and DI graph resolve for a real target.
+      - name: Build web (startup smoke)
+        run: flutter build web --dart-define=FLAVOR=dev

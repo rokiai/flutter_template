@@ -1,0 +1,116 @@
+# Daily dependency refresh (minor/patch only).
+# - Uses `flutter pub upgrade` within existing ^ constraints
+# - Never runs `flutter pub upgrade --major-versions` (that would rewrite pubspec.yaml)
+# - Extra guard: refuse push if any locked package jumped a major version
+# Then commit & push to main as your GitHub user (not github-actions[bot]).
+#
+# Required repository secret:
+#   GH_PAT — Personal Access Token (Contents: Read and write). Re-triggers CI after push.
+name: Daily dependency update
+
+on:
+  schedule:
+    # 16:00 UTC ≈ 00:00 Asia/Shanghai
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-deps
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Upgrade and push
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Ensure GH_PAT is configured
+        run: |
+          if [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "::error::Add repository secret GH_PAT (your Personal Access Token) so commits are pushed as your user."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Prepare env
+        run: cp .env.example .env
+
+      - name: Resolve current lock
+        run: flutter pub get
+
+      - name: Snapshot lockfile before upgrade
+        run: cp pubspec.lock pubspec.lock.before
+
+      - name: Upgrade dependencies (compatible / no major)
+        run: |
+          # Compatible upgrades only (respects ^ in pubspec.yaml).
+          # Do NOT use: flutter pub upgrade --major-versions
+          flutter pub upgrade
+
+      - name: Reject major version bumps
+        run: |
+          if ! python3 tool/check_no_major_bump.py pubspec.lock.before pubspec.lock; then
+            echo "Restoring previous pubspec.lock (major bump blocked)."
+            mv pubspec.lock.before pubspec.lock
+            flutter pub get
+            exit 1
+          fi
+          rm -f pubspec.lock.before
+
+      - name: Detect lockfile changes
+        id: changes
+        run: |
+          if git diff --quiet -- pubspec.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No dependency updates in pubspec.lock."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "pubspec.lock changed."
+            git diff --stat -- pubspec.lock
+          fi
+
+      - name: Code generation
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
+
+      - name: Analyze
+        if: steps.changes.outputs.changed == 'true'
+        run: flutter analyze --no-fatal-infos
+
+      - name: Unit tests
+        if: steps.changes.outputs.changed == 'true'
+        run: flutter test
+
+      - name: Build web (startup smoke)
+        if: steps.changes.outputs.changed == 'true'
+        run: flutter build web --dart-define=FLAVOR=dev
+
+      - name: Commit and push to main
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GIT_AUTHOR_NAME: rokiai
+          GIT_AUTHOR_EMAIL: vnues.wgf@gmail.com
+        run: |
+          git config user.name "$GIT_AUTHOR_NAME"
+          git config user.email "$GIT_AUTHOR_EMAIL"
+          # Only the lockfile — never auto-bump pubspec.yaml majors.
+          git add pubspec.lock
+          git commit -m "chore(deps): daily minor/patch upgrade"
+          git push origin HEAD:main
