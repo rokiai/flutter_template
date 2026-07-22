@@ -8,6 +8,36 @@ description: >-
 
 # Release (GitHub + Gitee)
 
+## Author identity（硬性，最高优先级）
+
+本仓库每一次 commit / annotated tag 的 **author 与 committer 必须是**：
+
+| 字段 | 唯一正确值 |
+|------|------------|
+| name | `rokiai` |
+| email | `vnues.wgf@gmail.com` |
+
+**禁止** `wanggangfeng`、`linwu-hi`、`vnues`、`@xunlei.com` 或任何其他身份。
+
+每次 commit / `git tag -a` 前必须：
+
+```bash
+export GIT_AUTHOR_NAME=rokiai
+export GIT_AUTHOR_EMAIL=vnues.wgf@gmail.com
+export GIT_COMMITTER_NAME=rokiai
+export GIT_COMMITTER_EMAIL=vnues.wgf@gmail.com
+```
+
+提交后校验：
+
+```bash
+git log -1 --format='%an <%ae>%n%cn <%ce>'
+```
+
+必须均为 `rokiai <vnues.wgf@gmail.com>`。错误则 `git reset --soft HEAD~1` 重做；**未通过不得 push / 不得打 tag 推送**。
+
+Tag 后可用：`git for-each-ref refs/tags/vX.Y.Z --format='%(taggername) %(taggeremail)'` 确认 tagger 也是 rokiai。
+
 ## Remotes
 
 | Remote | URL |
@@ -15,11 +45,11 @@ description: >-
 | `origin` | `git@github.com-rokiai:rokiai/flutter_template.git` |
 | `gitee` | `git@gitee.com:rokiai/flutter_template.git` |
 
-`origin` 使用 SSH Host 别名 `github.com-rokiai`（`~/.ssh/config` → `id_ed25519`），避免默认 `github.com` 密钥落到错误账号。
+`origin` 使用 `github.com-rokiai` SSH 别名（`id_ed25519`）。
 
 ## Version scheme
 
-`pubspec.yaml` uses `version: X.Y.Z+B` (semver + build number).
+`pubspec.yaml`：`version: X.Y.Z+B`
 
 | Bump | When | Example |
 |------|------|---------|
@@ -27,87 +57,70 @@ description: >-
 | minor | features | `0.1.1+2` → `0.2.0+3` |
 | major | breaking | `0.2.0+3` → `1.0.0+4` |
 
-Always increment **build number `+B`** on every release. Default bump is **patch** unless user specifies otherwise.
-
-Tag format: `vX.Y.Z` (no build number in tag).
+每次发版递增 `+B`。默认 **patch**。Tag：`vX.Y.Z`。
 
 ## Workflow
 
-Copy and track:
-
 ```
 Release:
-- [ ] Clean working tree (or commit first via commit-push skill)
-- [ ] Decide bump (patch/minor/major)
+- [ ] Clean tree / sync origin/main
+- [ ] Decide bump
 - [ ] Update pubspec.yaml version
-- [ ] Optional smoke: flutter analyze / flutter test
-- [ ] Commit release
-- [ ] Create annotated tag
-- [ ] Push commit + tag to origin and gitee
-- [ ] Create GitHub Release (optional Gitee release note)
+- [ ] Smoke: flutter analyze / test（可按用户跳过）
+- [ ] Export rokiai 四变量 → commit → 校验作者
+- [ ] Export 后 annotated tag → 校验 tagger
+- [ ] Push commit + tag → origin & gitee
+- [ ] Optional GitHub Release
 ```
 
 ### 1. Preconditions
 
 ```bash
 git status -sb
-git fetch origin
-git fetch gitee
+git fetch origin && git fetch gitee
+git pull --ff-only
 ```
 
-Working tree must be clean except intentional release edits. Sync with `origin/main` first (`git pull --ff-only`).
+### 2. Bump
 
-### 2. Bump version
+只改 `pubspec.yaml` 的 `version:`。
 
-Edit `pubspec.yaml` `version:` only. Do not change `publish_to`.
-
-### 3. Smoke (recommended)
+### 3. Smoke（推荐）
 
 ```bash
-flutter pub get
-flutter analyze --no-fatal-infos
-flutter test
+flutter pub get && flutter analyze --no-fatal-infos && flutter test
 ```
-
-Skip only if user says so.
 
 ### 4. Commit
 
-Author must be **rokiai \<vnues.wgf@gmail.com\>** (same as CI / open-source history):
-
 ```bash
 git add pubspec.yaml
-export GIT_AUTHOR_NAME=rokiai
-export GIT_AUTHOR_EMAIL=vnues.wgf@gmail.com
-export GIT_COMMITTER_NAME=rokiai
-export GIT_COMMITTER_EMAIL=vnues.wgf@gmail.com
+export GIT_AUTHOR_NAME=rokiai GIT_AUTHOR_EMAIL=vnues.wgf@gmail.com
+export GIT_COMMITTER_NAME=rokiai GIT_COMMITTER_EMAIL=vnues.wgf@gmail.com
 git commit -m "$(cat <<'EOF'
 chore(release): vX.Y.Z
 
 EOF
 )"
+git log -1 --format='%an <%ae>%n%cn <%ce>'   # 必须是 rokiai
 ```
-
-Include other intentional release files if present (e.g. CHANGELOG).
 
 ### 5. Tag
 
 ```bash
+export GIT_AUTHOR_NAME=rokiai GIT_AUTHOR_EMAIL=vnues.wgf@gmail.com
+export GIT_COMMITTER_NAME=rokiai GIT_COMMITTER_EMAIL=vnues.wgf@gmail.com
 git tag -a "vX.Y.Z" -m "vX.Y.Z"
 ```
 
-### 6. Push both remotes
+### 6. Push
 
 ```bash
-git push origin HEAD:main
-git push origin "vX.Y.Z"
-git push gitee HEAD:main
-git push gitee "vX.Y.Z"
+git push origin HEAD:main && git push origin "vX.Y.Z"
+git push gitee HEAD:main && git push gitee "vX.Y.Z"
 ```
 
-### 7. GitHub Release
-
-If `gh` is available:
+### 7. GitHub Release（可选）
 
 ```bash
 gh release create "vX.Y.Z" --title "vX.Y.Z" --notes "$(cat <<'EOF'
@@ -117,15 +130,12 @@ EOF
 )"
 ```
 
-Notes: summarize commits since previous tag (`git log vPREV..HEAD --oneline`).
-
-Gitee: if CLI unavailable, tell user the tag URL:
-`https://gitee.com/rokiai/flutter_template/releases` to attach notes manually.
+Gitee 无 CLI 时提示：https://gitee.com/rokiai/flutter_template/releases
 
 ## Rules
 
-- Only release when the user explicitly asks.
-- Never force-push tags or rewrite published tags without explicit request.
-- Never commit `.env` or secrets.
-- If push to one remote fails, report clearly; do not delete the local tag.
+- Only when user explicitly asks to release.
+- 作者/tagger 错误时禁止 push；用户明确要求时可 reset + force push 修正。
+- Never rewrite published tags without explicit request.
+- Never commit `.env` / secrets.
 - Keep `main` tracking `origin/main`.
